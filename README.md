@@ -1,16 +1,16 @@
 # Livox ROS2 Driver([览沃ROS2驱动程序中文说明](https://github.com/Livox-SDK/livox_ros2_driver/blob/master/README_CN.md))
 
-The Livox ROS2 driver is a driver package based on ROS2, specifically used to connect LiDAR products produced by Livox. The driver is currently only recommended to run under ubuntu18.04, the corresponding ROS2 version is dash, and other versions of ROS2 (such as foxy) are not currently supported.
+The Livox ROS2 driver is a driver package based on ROS2, specifically used to connect LiDAR products produced by Livox. The driver is currently only recommended to run under ubuntu18.04, the corresponding ROS2 version is dashing, and other versions of ROS2 (such as foxy) are not currently supported.
 
 ## 0. Version and Release History
 
 ### 0.1 Current Version
 
-v0.0.1beta
+[v0.0.1-beta](https://github.com/Livox-SDK/livox_ros2_driver/releases/tag/v0.0.1-beta)
 
 ### 0.2 Release History
 
-[Release History](https://github.com/Livox-SDK/livox_ros2_driver/releases)
+[Release History](https://github.com/Livox-SDK/livox_ros2_driver/releases/tag/v0.0.1-beta)
 
 ## 1. Install dependencies
 
@@ -118,7 +118,7 @@ All launch files of livox_ros2_driver are in the "ws_livox/src/livox_ros2_driver
 | livox_lidar_msg_launch.py    | Connect to Livox LiDAR device<br>Publish livox customized pointcloud data |
 | livox_hub_msg_launch.py      | Connect to Livox Hub device<br>Publish livox customized pointcloud data |
 
-#### 4.2 Livox_ros2_driver internal main parameter configuration instructions
+### 4.2 Livox_ros2_driver internal main parameter configuration instructions
 
 All internal parameters of Livox_ros2_driver are in the launch file. Below are detailed descriptions of the three commonly used parameters :
 
