@@ -1,6 +1,5 @@
 
 # ignore dir or file
-CMakeLists.txt
 livox_ros_driver/Livox-SDK
 livox_ros2_driver/launch/__pycache__/*.pyc
 #whitelist
