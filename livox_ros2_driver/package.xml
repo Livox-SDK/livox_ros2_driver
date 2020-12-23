@@ -9,15 +9,17 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <build_depend>roscpp</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>rosbag</build_depend>
-  <build_depend>livox_interfaces</build_depend>
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>livox_interfaces</depend>
+  <depend>sensor_msgs</depend>
+  <depend>rcutils</depend>
+  <depend>pcl_conversions</depend>
+  <depend>rcl_interfaces</depend>
+  <depend>libpcl-all-dev</depend>
 
+  <exec_depend>rosbag2</exec_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>livox_interfaces</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
