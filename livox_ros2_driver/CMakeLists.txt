@@ -35,6 +35,8 @@ find_package(pcl_conversions REQUIRED)
 find_package(rcl_interfaces REQUIRED)
 find_package(livox_interfaces REQUIRED)
 find_package(PCL REQUIRED)
+find_package(livox_sdk_vendor REQUIRED)
+find_package(livox_sdk REQUIRED)
 
 # check apr
 find_package(PkgConfig)
@@ -66,6 +68,8 @@ ament_target_dependencies(${PROJECT_NAME}_node
   sensor_msgs
   std_msgs
   livox_interfaces)
+
+target_include_directories(${PROJECT_NAME}_node PRIVATE ${livox_sdk_INCLUDE_DIRS})
 
 target_sources(${PROJECT_NAME}_node
 	PRIVATE
@@ -101,7 +105,7 @@ target_include_directories(${PROJECT_NAME}_node
 
 # link libraries
 target_link_libraries(${PROJECT_NAME}_node 	
-	livox_sdk_static.a
+	${livox_sdk_LIBRARIES}
 	${Boost_LIBRARY}
 	${rclcpp_LIBRARIES}
 	${PCL_LIBRARIES}
