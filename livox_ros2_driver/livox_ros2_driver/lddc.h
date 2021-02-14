@@ -67,7 +67,7 @@ class Lddc {
 
   uint8_t GetTransferFormat(void) { return transfer_format_; }
   uint8_t IsMultiTopic(void) { return use_multi_topic_; }
-  void SetRosNode(std::shared_ptr<rclcpp::Node>& node) { cur_node_ = node; }
+  void SetRosNode(rclcpp::Node * node) { cur_node_ = node; }
   void SetPublishFrq(uint32_t frq) { publish_frq_ = frq; }
 
   Lds *lds_;
@@ -109,7 +109,7 @@ class Lddc {
   std::shared_ptr<rclcpp::PublisherBase>global_pub_;
   std::shared_ptr<rclcpp::PublisherBase>private_imu_pub_[kMaxSourceLidar];
   std::shared_ptr<rclcpp::PublisherBase>global_imu_pub_;
-  std::shared_ptr<rclcpp::Node>cur_node_;
+  rclcpp::Node* cur_node_;
   // rclcpp::rosbag::Bag *bag_;
 };
 

@@ -37,4 +37,34 @@
   "." GET_STRING(LIVOX_ROS_DRIVER_VER_MINOR) "." GET_STRING( \
       LIVOX_ROS_DRIVER_VER_PATCH)
 
-#endif
+#include <future>
+#include <memory>
+#include <thread>
+
+#include "rclcpp/rclcpp.hpp"
+
+#include "lddc.h"
+
+namespace livox_ros
+{
+
+class LivoxDriver: public rclcpp::Node
+{
+public:
+
+  explicit LivoxDriver(const rclcpp::NodeOptions & options);
+
+  ~LivoxDriver();
+
+private:
+  void pollThread();
+
+  std::unique_ptr<Lddc> lddc_ptr_;
+  std::shared_ptr<std::thread> poll_thread_;
+  std::shared_future<void> future_;
+  std::promise<void> exit_signal_;
+};
+
+}  // namespace livox_ros
+
+#endif  // LIVOX_ROS2_DRIVER_INClUDE_LIVOX_ROS2_DRIVER_H_
