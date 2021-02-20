@@ -26,16 +26,9 @@ message(STATUS "${PROJECT_NAME} version: ${LIVOX_ROS_DRIVER_VERSION}")
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
-find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(rcutils REQUIRED)
-find_package(pcl_conversions REQUIRED)
-find_package(rcl_interfaces REQUIRED)
-find_package(livox_interfaces REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
+ament_auto_find_build_dependencies()
 find_package(PCL REQUIRED)
-find_package(livox_sdk_vendor REQUIRED)
 find_package(livox_sdk REQUIRED)
 
 # check apr
@@ -49,77 +42,62 @@ endif (APR_FOUND)
 ## make sure the livox_sdk_static library is installed
 find_library(LIVOX_SDK_LIBRARY liblivox_sdk_static.a /usr/local/lib)
 
-## PCL library 
-link_directories(${PCL_LIBRARY_DIRS}) 
+## PCL library
+link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
 # livox ros2 driver target
-add_executable(${PROJECT_NAME}_node "")
+ament_auto_add_library(${PROJECT_NAME} SHARED
+  livox_ros2_driver/lvx_file.cpp
+  livox_ros2_driver/ldq.cpp
+  livox_ros2_driver/lds.cpp
+  livox_ros2_driver/lds_lvx.cpp
+  livox_ros2_driver/lds_lidar.cpp
+  livox_ros2_driver/lds_hub.cpp
+  livox_ros2_driver/lddc.cpp
+  livox_ros2_driver/livox_ros2_driver.cpp
+  timesync/timesync.cpp
+  timesync/user_uart/user_uart.cpp
+  common/comm/comm_protocol.cpp
+  common/comm/sdk_protocol.cpp
+  common/comm/gps_protocol.cpp
+)
 
-target_compile_options(${PROJECT_NAME}_node
-    PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-missing-field-initializers>
-    )
+target_compile_options(${PROJECT_NAME}
+  PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-missing-field-initializers -fPIC>
+)
 
-ament_target_dependencies(${PROJECT_NAME}_node
-  pcl_conversions
-  rcl_interfaces
-  rclcpp
-  rcutils
-  sensor_msgs
-  std_msgs
-  livox_interfaces)
-
-target_include_directories(${PROJECT_NAME}_node PRIVATE ${livox_sdk_INCLUDE_DIRS})
-
-target_sources(${PROJECT_NAME}_node
-	PRIVATE
-	livox_ros2_driver/lvx_file.cpp
-	livox_ros2_driver/ldq.cpp
-	livox_ros2_driver/lds.cpp
-	livox_ros2_driver/lds_lvx.cpp
-	livox_ros2_driver/lds_lidar.cpp
-	livox_ros2_driver/lds_hub.cpp
-	livox_ros2_driver/lddc.cpp
-	livox_ros2_driver/livox_ros2_driver.cpp
-	timesync/timesync.cpp
-	timesync/user_uart/user_uart.cpp
-	common/comm/comm_protocol.cpp
-	common/comm/sdk_protocol.cpp
-	common/comm/gps_protocol.cpp
-	)
+target_include_directories(${PROJECT_NAME} PRIVATE ${livox_sdk_INCLUDE_DIRS})
 
 # include file direcotry
-target_include_directories(${PROJECT_NAME}_node
-    PUBLIC
-    ${rclcpp_INCLUDE_DIRS}
-    ${PCL_INCLUDE_DIRS}
-    ${APR_INCLUDE_DIRS}
-    common
-    common/rapidjson
-    comon/rapdidxml
-    common/comm
-    timesync
-    timesync/user_uart
-    livox_ros_driver2
-    )
+target_include_directories(${PROJECT_NAME} PUBLIC
+  ${PCL_INCLUDE_DIRS}
+  ${APR_INCLUDE_DIRS}
+  common
+  common/rapidjson
+  comon/rapdidxml
+  common/comm
+  timesync
+  timesync/user_uart
+  livox_ros2_driver
+)
 
 # link libraries
-target_link_libraries(${PROJECT_NAME}_node 	
+target_link_libraries(${PROJECT_NAME}
 	${livox_sdk_LIBRARIES}
 	${Boost_LIBRARY}
-	${rclcpp_LIBRARIES}
 	${PCL_LIBRARIES}
 	${APR_LIBRARIES}
-	)  
+)
 #  ${sensor_msgs_LIBRARIES}
 #  ${std_msgs_LIBRARIES}
 #  ${Boost_SYSTEM_LIBRARY}
 
-install(TARGETS
-  ${PROJECT_NAME}_node
-  DESTINATION
-  lib/${PROJECT_NAME})
 
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "livox_ros::LivoxDriver"
+  EXECUTABLE ${PROJECT_NAME}_node
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -132,4 +110,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-ament_package()
+ament_auto_package(INSTALL_TO_SHARE
+  config
+  launch
+)

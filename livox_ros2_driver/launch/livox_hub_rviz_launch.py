@@ -35,15 +35,15 @@ livox_ros2_params = [
 def generate_launch_description():
     livox_driver = Node(
         package='livox_ros2_driver',
-        node_executable='livox_ros2_driver_node',
-        node_name='livox_lidar_publisher',
+        executable='livox_ros2_driver_node',
+        name='livox_lidar_publisher',
         output='screen',
         parameters=livox_ros2_params
         )
 
     livox_rviz = Node(
             package='rviz2',
-            node_executable='rviz2',
+            executable='rviz2',
             output='screen',
             arguments=['--display-config', rviz_config_path]
         )

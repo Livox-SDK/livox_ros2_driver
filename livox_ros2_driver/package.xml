@@ -7,9 +7,10 @@
   <maintainer email="dev@livoxtech.com">feng</maintainer>
   <license>TODO: License declaration</license>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
   <depend>std_msgs</depend>
   <depend>livox_interfaces</depend>
   <depend>sensor_msgs</depend>
