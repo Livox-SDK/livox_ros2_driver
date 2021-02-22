@@ -69,6 +69,8 @@ int LdsLvx::InitLdsLvx(const char *lvx_path) {
     return -1;
   }
 
+  DisableConsoleLogger();
+
   int ret = lvx_file_->Open(lvx_path, std::ios::in);
   if (ret) {
     printf("Open %s file fail[%d]!\n", lvx_path, ret);
