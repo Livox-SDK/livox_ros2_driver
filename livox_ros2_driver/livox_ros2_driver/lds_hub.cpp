@@ -68,6 +68,8 @@ int LdsHub::InitLdsHub(std::vector<std::string> &broadcast_code_strs,
     return -1;
   }
 
+  DisableConsoleLogger();
+
   if (!Init()) {
     Uninit();
     printf("Livox-SDK init fail!\n");
