@@ -86,16 +86,16 @@ class Lddc {
                           uint8_t handle);
 
   std::shared_ptr<rclcpp::PublisherBase> CreatePublisher(uint8_t msg_type,
-    std::string &topic_name);
+    std::string &topic_name, uint32_t queue_size);
   std::shared_ptr<rclcpp::PublisherBase> GetCurrentPublisher(uint8_t handle);
   std::shared_ptr<rclcpp::PublisherBase> GetCurrentImuPublisher(uint8_t handle);
   void PollingLidarPointCloudData(uint8_t handle, LidarDevice *lidar);
   void PollingLidarImuData(uint8_t handle, LidarDevice *lidar);
   void InitPointcloud2MsgHeader(sensor_msgs::msg::PointCloud2& cloud);
-  void FillPointsToPclMsg(PointCloud& pcl_msg, \
+  void FillPointsToPclMsg(PointCloud& pcl_msg,
       LivoxPointXyzrtl* src_point, uint32_t num);
-  void FillPointsToCustomMsg(livox_interfaces::msg::CustomMsg& livox_msg, \
-      LivoxPointXyzrtl* src_point, uint32_t num, uint32_t offset_time, \
+  void FillPointsToCustomMsg(livox_interfaces::msg::CustomMsg& livox_msg,
+      LivoxPointXyzrtl* src_point, uint32_t num, uint32_t offset_time,
       uint32_t point_interval, uint32_t echo_num);
   uint8_t transfer_format_;
   uint8_t use_multi_topic_;

@@ -103,8 +103,8 @@ LivoxDriver::LivoxDriver(const rclcpp::NodeOptions & node_options)
   this->get_parameter("frame_id", frame_id);
   if (publish_freq > 100.0) {
     publish_freq = 100.0;
-  } else if (publish_freq < 1.0) {
-    publish_freq = 1.0;
+  } else if (publish_freq < 0.1) {
+    publish_freq = 0.1;
   } else {
     publish_freq = publish_freq;
   }
