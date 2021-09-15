@@ -35,6 +35,7 @@
 #include <vector>
 #include <mutex>
 #include <condition_variable>
+#include <thread>
 
 #include "ldq.h"
 
@@ -56,7 +57,7 @@ const uint32_t KEthPacketHeaderLength = 18; /**< (sizeof(LivoxEthPacket) - 1) */
 const uint32_t KCartesianPointSize = 13;
 const uint32_t KSphericalPointSzie = 9;
 
-const uint64_t kRosTimeMax = 4294967296000000000; /**< 2^32 * 1000000000ns */
+const int64_t kRosTimeMax = 4294967296000000000; /**< 2^32 * 1000000000ns */
 const int64_t kPacketTimeGap = 1000000; /**< 1ms = 1000000ns */
 /**< the threshold of packet continuous */
 const int64_t kMaxPacketTimeGap = 1700000;
@@ -79,6 +80,7 @@ typedef enum {
   kConnectStateOn = 1,
   kConnectStateConfig = 2,
   kConnectStateSampling = 3,
+  kConnectStateDataReady = 4,
 } LidarConnectState;
 
 /** Device data source type */
@@ -88,6 +90,12 @@ typedef enum {
   kSourceLvxFile,      /**< Data from parse lvx file. */
   kSourceUndef,
 } LidarDataSourceType;
+
+// /** Lidar Data output type */
+// typedef enum {
+//   kOutputToRos = 0,
+//   kOutputToRosBagFile = 1,
+// } LidarDataOutputType;
 
 typedef enum { kCoordinateCartesian = 0, kCoordinateSpherical } CoordinateType;
 
@@ -164,18 +172,38 @@ typedef struct {
 
 /** Lidar data source info abstract */
 typedef struct {
-  uint8_t handle;                    /**< Lidar access handle. */
-  uint8_t data_src;                  /**< From raw lidar or livox file. */
-  uint8_t raw_data_type;             /**< The data type in eth packaet */
-  bool data_is_pubulished;           /**< Indicate the data of lidar whether is
-                                          pubulished. */
-  volatile uint32_t packet_interval; /**< The time interval between packets
-                                        of current lidar, unit:ns */
-  volatile uint32_t packet_interval_max; /**< If more than it,
-                                            have packet loss */
-  /**< packet num that onetime published */
-  volatile uint32_t onetime_publish_packets;
+  int64_t systime;  /**< Current system time when new data arrived */
+  int64_t timeline; /**< timestamp of the new eth packet. */
+  uint32_t new_data_start_idx; /**< new data start index in data queue. */
+  uint32_t timestamp_type;  /**< timestamp type of the new eth packet. */
+  uint32_t packet_interval; /**< The time interval between packets
+                                 of current lidar, unit:ns */
+  uint32_t packet_interval_max; /**< If more than it, have packet loss */
+  uint32_t onetime_publish_packets;
+  uint8_t data_type; /**< raw ethernet packet pointcloud type */
+} DataSyncInfo;
+
+/** Lidar data source info abstract */
+typedef struct {
+  uint8_t handle;        /**< Lidar access handle. */
+  uint8_t data_src;      /**< From raw lidar or livox file. */
   volatile LidarConnectState connect_state;
+  bool data_is_pubulished; /**< Indicate the data of lidar whether is
+                                pubulished. */
+  volatile bool new_data_flag; /**< Data read sync flag for publish. */
+  uint8_t marked_data_type;  /**< Used for detect ethernet packet format */
+
+  uint8_t raw_data_type;   /**< The data type of current pueth packaet. */
+  uint32_t timestamp_type; /**< timestamp type of the current eth packet. */
+  uint32_t packet_interval;/**< The time interval between packets
+                                of current lidar, unit:ns */
+  uint32_t packet_interval_max;/**< If more than it, have packet loss */
+  uint32_t onetime_publish_packets; /**< Packet num that onetime published */
+  /* Used for null pointcloud2 packet, when packets lost */
+  int64_t last_systime;
+  int64_t last_timeline;
+  DataSyncInfo sync_info; /**< Used for data sync when new format packet arrived */
+
   DeviceInfo info;
   LidarPacketStatistic statistic_info;
   LidarDataQueue data;
@@ -224,8 +252,8 @@ typedef struct {
 
 #pragma pack()
 
-typedef uint8_t *(*PointConvertHandler)(uint8_t *point_buf, \
-    LivoxEthPacket *eth_packet, ExtrinsicParameter &extrinsic, \
+typedef uint8_t *(*PointConvertHandler)(uint8_t *point_buf,
+    LivoxEthPacket *eth_packet, ExtrinsicParameter &extrinsic,
     uint32_t line_num);
 
 const DataTypePointInfoPair data_type_info_pair_table[kMaxPointDataType] = {
@@ -257,7 +285,8 @@ const ProductTypePointInfoPair product_type_info_pair_table[kMaxProductType] = {
  * Global function for general use.
  */
 bool IsFilePathValid(const char *path_str);
-uint64_t RawLdsStampToNs(LdsStamp &timestamp, uint8_t timestamp_type);
+time_t replace_timegm(struct tm *tm);
+int64_t RawLdsStampToNs(LdsStamp &timestamp, uint8_t timestamp_type);
 uint64_t GetStoragePacketTimestamp(StoragePacket *packet, uint8_t data_src);
 uint32_t CalculatePacketQueueSize(uint32_t interval_ms, uint8_t product_type,
                                   uint8_t data_type);
@@ -434,11 +463,14 @@ class Lds {
   void CleanRequestExit() { request_exit_ = false; }
   bool IsRequestExit() { return request_exit_; }
   virtual void PrepareExit(void);
-  void UpdateLidarInfoByEthPacket(LidarDevice *p_lidar, \
-      LivoxEthPacket* eth_packet);
+  void UpdateLidarInfoForPublish(LidarDevice *p_lidar);
+  void UpdateLidarInfoByEthPacket(LidarDevice *p_lidar,
+      LivoxEthPacket* eth_packet, LdsStamp* timestamp);
+  void PeriodicWakeup(void);
   uint8_t lidar_count_;                 /**< Lidar access handle. */
   LidarDevice lidars_[kMaxSourceLidar]; /**< The index is the handle */
   Semaphore semaphore_;
+  std::shared_ptr<std::thread> t_periodic_wakeup_; /**< periodic wakeup to poll data */
 
  protected:
   uint32_t buffer_time_ms_; /**< Buffer time before data in queue is read */
@@ -446,6 +478,7 @@ class Lds {
 
  private:
   volatile bool request_exit_;
+  std::mutex sync_mutex_;
 };
 
 }  // namespace livox_ros

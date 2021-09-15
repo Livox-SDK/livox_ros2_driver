@@ -112,8 +112,8 @@ LivoxDriver::LivoxDriver(const rclcpp::NodeOptions & node_options)
   future_ = exit_signal_.get_future();
 
   /** Lidar data distribute control and lidar data source set */
-  lddc_ptr_ =
-    std::make_unique<Lddc>(xfer_format, multi_topic, data_src, output_type, publish_freq, frame_id);
+  lddc_ptr_ = std::make_unique<Lddc>(xfer_format, multi_topic, data_src,
+      output_type, publish_freq, frame_id);
   lddc_ptr_->SetRosNode(this);
 
   int ret = 0;
@@ -122,7 +122,8 @@ LivoxDriver::LivoxDriver(const rclcpp::NodeOptions & node_options)
 
     std::string user_config_path;
     this->get_parameter("user_config_path", user_config_path);
-    RCLCPP_INFO(this->get_logger(), "Config file : %s", user_config_path.c_str());
+    RCLCPP_INFO(this->get_logger(), "Config file : %s",
+        user_config_path.c_str());
 
     std::string cmdline_bd_code;
     this->get_parameter("cmdline_input_bd_code", cmdline_bd_code);

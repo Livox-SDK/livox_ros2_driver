@@ -36,7 +36,7 @@ const uint32_t KEthPacketMaxLength = 1500;
 #pragma pack(1)
 
 typedef struct {
-  uint64_t time_rcv; /**< receive time when data arrive */
+  uint64_t time_rcv; /**< receive time when data arrived */
   uint32_t point_num;
   uint8_t raw_data[KEthPacketMaxLength];
 } StoragePacket;
@@ -73,6 +73,7 @@ int DeInitQueue(LidarDataQueue *queue);
 void ResetQueue(LidarDataQueue *queue);
 void QueuePrePop(LidarDataQueue *queue, StoragePacket *storage_packet);
 void QueuePopUpdate(LidarDataQueue *queue);
+void SetQueueReadIdx(LidarDataQueue *queue, uint32_t rd_idx);
 uint32_t QueuePop(LidarDataQueue *queue, StoragePacket *storage_packet);
 uint32_t QueueUsedSize(LidarDataQueue *queue);
 uint32_t QueueUnusedSize(LidarDataQueue *queue);

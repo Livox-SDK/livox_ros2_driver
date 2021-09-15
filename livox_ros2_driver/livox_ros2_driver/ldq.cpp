@@ -90,6 +90,10 @@ uint32_t QueuePop(LidarDataQueue *queue, StoragePacket *storage_packet) {
   return 1;
 }
 
+void SetQueueReadIdx(LidarDataQueue *queue, uint32_t rd_idx) {
+  queue->rd_idx = rd_idx;
+}
+
 uint32_t QueueUsedSize(LidarDataQueue *queue) {
   return queue->wr_idx - queue->rd_idx;
 }

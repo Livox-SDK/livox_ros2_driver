@@ -74,14 +74,14 @@ class Lddc {
 
  private:
   int32_t GetPublishStartTime(LidarDevice *lidar, LidarDataQueue *queue,
-                              uint64_t *start_time,
+                              int64_t *start_time,
                               StoragePacket *storage_packet);
   uint32_t PublishPointcloud2(LidarDataQueue *queue, uint32_t packet_num,
-                              uint8_t handle);
+                              uint8_t handle, bool manual_trigger);
   uint32_t PublishPointcloudData(LidarDataQueue *queue, uint32_t packet_num,
-                                 uint8_t handle);
+                                 uint8_t handle, bool manual_trigger);
   uint32_t PublishCustomPointcloud(LidarDataQueue *queue, uint32_t packet_num,
-                                   uint8_t handle);
+                                   uint8_t handle, bool manual_trigger);
   uint32_t PublishImuData(LidarDataQueue *queue, uint32_t packet_num,
                           uint8_t handle);
 

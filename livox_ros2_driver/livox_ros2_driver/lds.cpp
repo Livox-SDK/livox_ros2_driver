@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <functional>
 #include <chrono>
 
 namespace livox_ros {
@@ -43,7 +44,31 @@ bool IsFilePathValid(const char *path_str) {
   }
 }
 
-uint64_t RawLdsStampToNs(LdsStamp &timestamp, uint8_t timestamp_type) {
+/** Replace nonstardard function "timegm" with mktime.
+ *  For a portable version of timegm, set the TZ environment variable to UTC,
+ *  call mktime and restore the value of TZ.
+ *  "localtime" and "timegm" are nonstandard GNU extensions that are also present
+ *  on the BSDs. Avoid their use!!!
+ */
+time_t replace_timegm(struct tm *tm) {
+  time_t ret;
+  char *tz;
+
+  tz = getenv("TZ");
+  setenv("TZ", "", 1);
+  tzset();
+  ret = mktime(tm);
+
+  if (tz)
+    setenv("TZ", tz, 1);
+  else
+    unsetenv("TZ");
+  tzset();
+
+  return ret;
+}
+
+int64_t RawLdsStampToNs(LdsStamp &timestamp, uint8_t timestamp_type) {
   if (timestamp_type == kTimestampTypePps) {
     return timestamp.stamp;
   } else if (timestamp_type == kTimestampTypeNoSync) {
@@ -252,8 +277,8 @@ static uint8_t *LivoxRawPointToPxyzrtl(uint8_t *point_buf, LivoxEthPacket *eth_p
   return (uint8_t *)dst_point;
 }
 
-static uint8_t *LivoxSpherPointToPxyzrtl(uint8_t *point_buf, \
-    LivoxEthPacket *eth_packet, ExtrinsicParameter &extrinsic, \
+static uint8_t *LivoxSpherPointToPxyzrtl(uint8_t *point_buf,
+    LivoxEthPacket *eth_packet, ExtrinsicParameter &extrinsic,
     uint32_t line_num) {
   LivoxPointXyzrtl *dst_point = (LivoxPointXyzrtl *)point_buf;
   uint32_t points_per_packet = GetPointsPerPacket(eth_packet->data_type);
@@ -276,8 +301,8 @@ static uint8_t *LivoxSpherPointToPxyzrtl(uint8_t *point_buf, \
   return (uint8_t *)dst_point;
 }
 
-static uint8_t *LivoxExtendRawPointToPxyzrtl(uint8_t *point_buf, \
-    LivoxEthPacket *eth_packet, ExtrinsicParameter &extrinsic, \
+static uint8_t *LivoxExtendRawPointToPxyzrtl(uint8_t *point_buf,
+    LivoxEthPacket *eth_packet, ExtrinsicParameter &extrinsic,
     uint32_t line_num) {
   LivoxPointXyzrtl *dst_point = (LivoxPointXyzrtl *)point_buf;
   uint32_t points_per_packet = GetPointsPerPacket(eth_packet->data_type);
@@ -307,8 +332,8 @@ static uint8_t *LivoxExtendRawPointToPxyzrtl(uint8_t *point_buf, \
   return (uint8_t *)dst_point;
 }
 
-static uint8_t *LivoxExtendSpherPointToPxyzrtl(uint8_t *point_buf, \
-    LivoxEthPacket *eth_packet, ExtrinsicParameter &extrinsic, \
+static uint8_t *LivoxExtendSpherPointToPxyzrtl(uint8_t *point_buf,
+    LivoxEthPacket *eth_packet, ExtrinsicParameter &extrinsic,
     uint32_t line_num) {
   LivoxPointXyzrtl *dst_point = (LivoxPointXyzrtl *)point_buf;
   uint32_t points_per_packet = GetPointsPerPacket(eth_packet->data_type);
@@ -337,8 +362,8 @@ static uint8_t *LivoxExtendSpherPointToPxyzrtl(uint8_t *point_buf, \
   return (uint8_t *)dst_point;
 }
 
-static uint8_t *LivoxDualExtendRawPointToPxyzrtl(uint8_t *point_buf, \
-    LivoxEthPacket *eth_packet, ExtrinsicParameter &extrinsic, \
+static uint8_t *LivoxDualExtendRawPointToPxyzrtl(uint8_t *point_buf,
+    LivoxEthPacket *eth_packet, ExtrinsicParameter &extrinsic,
     uint32_t line_num) {
   LivoxPointXyzrtl *dst_point = (LivoxPointXyzrtl *)point_buf;
   uint32_t points_per_packet = GetPointsPerPacket(eth_packet->data_type);
@@ -370,8 +395,8 @@ static uint8_t *LivoxDualExtendRawPointToPxyzrtl(uint8_t *point_buf, \
   return (uint8_t *)dst_point;
 }
 
-static uint8_t *LivoxDualExtendSpherPointToPxyzrtl(uint8_t *point_buf, \
-    LivoxEthPacket *eth_packet, ExtrinsicParameter &extrinsic, \
+static uint8_t *LivoxDualExtendSpherPointToPxyzrtl(uint8_t *point_buf,
+    LivoxEthPacket *eth_packet, ExtrinsicParameter &extrinsic,
     uint32_t line_num) {
   LivoxPointXyzrtl *dst_point = (LivoxPointXyzrtl *)point_buf;
   uint32_t points_per_packet = GetPointsPerPacket(eth_packet->data_type);
@@ -415,8 +440,8 @@ static uint8_t *LivoxDualExtendSpherPointToPxyzrtl(uint8_t *point_buf, \
   return (uint8_t *)dst_point;
 }
 
-static uint8_t *LivoxTripleExtendRawPointToPxyzrtl(uint8_t *point_buf, \
-    LivoxEthPacket *eth_packet, ExtrinsicParameter &extrinsic, \
+static uint8_t *LivoxTripleExtendRawPointToPxyzrtl(uint8_t *point_buf,
+    LivoxEthPacket *eth_packet, ExtrinsicParameter &extrinsic,
     uint32_t line_num) {
   LivoxPointXyzrtl *dst_point = (LivoxPointXyzrtl *)point_buf;
   uint32_t points_per_packet = GetPointsPerPacket(eth_packet->data_type);
@@ -448,8 +473,8 @@ static uint8_t *LivoxTripleExtendRawPointToPxyzrtl(uint8_t *point_buf, \
   return (uint8_t *)dst_point;
 }
 
-static uint8_t *LivoxTripleExtendSpherPointToPxyzrtl(uint8_t *point_buf, \
-    LivoxEthPacket *eth_packet, ExtrinsicParameter &extrinsic, \
+static uint8_t *LivoxTripleExtendSpherPointToPxyzrtl(uint8_t *point_buf,
+    LivoxEthPacket *eth_packet, ExtrinsicParameter &extrinsic,
     uint32_t line_num) {
   LivoxPointXyzrtl *dst_point = (LivoxPointXyzrtl *)point_buf;
   uint32_t points_per_packet = GetPointsPerPacket(eth_packet->data_type);
@@ -549,15 +574,20 @@ static void PointCloudConvert(LivoxPoint *p_dpoint, LivoxRawPoint *p_raw_point) 
 #endif
 
 /* Member function --------------------------------------------------------- */
-Lds::Lds(uint32_t buffer_time_ms, uint8_t data_src) : \
-    lidar_count_(kMaxSourceLidar), semaphore_(0), \
+Lds::Lds(uint32_t buffer_time_ms, uint8_t data_src) :
+    lidar_count_(kMaxSourceLidar), semaphore_(0),
     buffer_time_ms_(buffer_time_ms), data_src_(data_src), request_exit_(false) {
-    ResetLds(data_src_);
+  ResetLds(data_src_);
+  t_periodic_wakeup_ =
+      std::make_shared<std::thread>(std::bind(&Lds::PeriodicWakeup, this));
 }
 
 Lds::~Lds() {
   lidar_count_ = 0;
   ResetLds(0);
+  if (t_periodic_wakeup_->joinable()) {
+    t_periodic_wakeup_->join();
+  }
 }
 
 void Lds::ResetLidar(LidarDevice *lidar, uint8_t data_src) {
@@ -571,7 +601,11 @@ void Lds::ResetLidar(LidarDevice *lidar, uint8_t data_src) {
   lidar->data_src = data_src;
   lidar->data_is_pubulished = false;
   lidar->connect_state = kConnectStateOff;
-  lidar->raw_data_type = 0xFF;
+  lidar->marked_data_type = 0xFF;
+
+  lidar->last_systime = 0;
+  lidar->last_timeline = 0;
+  lidar->new_data_flag = false;
 }
 
 void Lds::SetLidarDataSrc(LidarDevice *lidar, uint8_t data_src) {
@@ -618,27 +652,66 @@ uint8_t Lds::GetDeviceType(uint8_t handle) {
   }
 }
 
-void Lds::UpdateLidarInfoByEthPacket(LidarDevice *p_lidar, \
-    LivoxEthPacket* eth_packet) {
-  if (p_lidar->raw_data_type != eth_packet->data_type) {
-    p_lidar->raw_data_type = eth_packet->data_type;
-    p_lidar->packet_interval = GetPacketInterval(p_lidar->info.type, \
+void Lds::UpdateLidarInfoForPublish(LidarDevice *p_lidar)
+{
+  std::lock_guard<std::mutex> lck (sync_mutex_);
+  p_lidar->raw_data_type = p_lidar->sync_info.data_type;
+  p_lidar->timestamp_type = p_lidar->sync_info.timestamp_type;
+  p_lidar->packet_interval = p_lidar->sync_info.packet_interval;
+  p_lidar->packet_interval_max = p_lidar->sync_info.packet_interval_max;
+  p_lidar->last_timeline = p_lidar->sync_info.timeline;
+  p_lidar->last_systime = p_lidar->sync_info.systime;
+  p_lidar->onetime_publish_packets = p_lidar->sync_info.onetime_publish_packets;
+
+  SetQueueReadIdx(&p_lidar->data, p_lidar->sync_info.new_data_start_idx);
+  p_lidar->data_is_pubulished = false;
+  p_lidar->new_data_flag = false;
+}
+
+void Lds::UpdateLidarInfoByEthPacket(LidarDevice *p_lidar,
+    LivoxEthPacket* eth_packet, LdsStamp* timestamp) {
+  {
+    std::lock_guard<std::mutex> lck (sync_mutex_);
+    /* New format packet,first connected, or reconnected */
+    p_lidar->marked_data_type = eth_packet->data_type;
+    p_lidar->new_data_flag = true;
+    p_lidar->connect_state = kConnectStateDataReady;
+
+    /* Record packet info for sync */
+    p_lidar->sync_info.timestamp_type = eth_packet->timestamp_type;
+    p_lidar->sync_info.packet_interval = GetPacketInterval(p_lidar->info.type,
         eth_packet->data_type);
-    p_lidar->packet_interval_max = p_lidar->packet_interval * 1.8f;
-    p_lidar->onetime_publish_packets = \
-        GetPacketNumPerSec(p_lidar->info.type, \
+    p_lidar->sync_info.packet_interval_max =
+        p_lidar->sync_info.packet_interval * 1.8f;
+    p_lidar->sync_info.timeline = timestamp->stamp;
+    p_lidar->sync_info.data_type = eth_packet->data_type;
+
+    auto cur_time = std::chrono::high_resolution_clock::now();
+    p_lidar->sync_info.systime = cur_time.time_since_epoch().count();
+    p_lidar->sync_info.onetime_publish_packets =
+        GetPacketNumPerSec(p_lidar->info.type,
         p_lidar->raw_data_type) * buffer_time_ms_ / 1000;
-    printf("Lidar[%d][%s] DataType[%d] PacketInterval[%d] PublishPackets[%d]\n",
-        p_lidar->handle, p_lidar->info.broadcast_code, p_lidar->raw_data_type,
-        p_lidar->packet_interval, p_lidar->onetime_publish_packets);
+    /* Record new data start index in data queue */
+    LidarDataQueue *p_queue = &p_lidar->data;
+    if (nullptr == p_queue->storage_packet) {
+      p_lidar->sync_info.new_data_start_idx = p_queue->wr_idx;
+    } else {
+      p_lidar->sync_info.new_data_start_idx = 0;
+    }
   }
+
+  printf("Lidar[%02d][%s] DataType[%d] timestamp_type[%d] PacketInterval[%d] "
+      "PublishPackets[%d]\n", p_lidar->handle, p_lidar->info.broadcast_code,
+      p_lidar->sync_info.data_type, p_lidar->sync_info.timestamp_type,
+      p_lidar->sync_info.packet_interval,
+      p_lidar->sync_info.onetime_publish_packets);
 }
 
 void Lds::StorageRawPacket(uint8_t handle, LivoxEthPacket* eth_packet) {
   LidarDevice *p_lidar = &lidars_[handle];
   LidarPacketStatistic *packet_statistic = &p_lidar->statistic_info;
   LdsStamp cur_timestamp;
-  uint64_t timestamp;
+  int64_t timestamp;
 
   memcpy(cur_timestamp.stamp_bytes, eth_packet->timestamp,
          sizeof(cur_timestamp));
@@ -649,7 +722,6 @@ void Lds::StorageRawPacket(uint8_t handle, LivoxEthPacket* eth_packet) {
   }
 
   if (kImu != eth_packet->data_type) {
-    UpdateLidarInfoByEthPacket(p_lidar, eth_packet);
     if (eth_packet->timestamp_type == kTimestampTypePps) {
       /** Whether a new sync frame */
       if ((cur_timestamp.stamp < packet_statistic->last_timestamp) &&
@@ -668,9 +740,12 @@ void Lds::StorageRawPacket(uint8_t handle, LivoxEthPacket* eth_packet) {
           buffer_time_ms_, p_lidar->info.type, eth_packet->data_type);
       InitQueue(p_queue, queue_size);
       printf("Lidar[%02d][%s] storage queue size : %d %d\n", p_lidar->handle,
-             p_lidar->info.broadcast_code, queue_size, p_queue->size);
+          p_lidar->info.broadcast_code, queue_size, p_queue->size);
     }
     if (!QueueIsFull(p_queue)) {
+      if (p_lidar->marked_data_type != eth_packet->data_type) {
+        UpdateLidarInfoByEthPacket(p_lidar, eth_packet, &cur_timestamp);
+      }
       QueuePushAny(p_queue, (uint8_t *)eth_packet,
           GetEthPacketLen(eth_packet->data_type),
           packet_statistic->timebase,
@@ -706,6 +781,28 @@ void Lds::StorageRawPacket(uint8_t handle, LivoxEthPacket* eth_packet) {
           GetEthPacketLen(eth_packet->data_type),
           packet_statistic->imu_timebase,
           GetPointsPerPacket(eth_packet->data_type));
+    }
+  }
+}
+
+void Lds::PeriodicWakeup(void)
+{
+  uint32_t sleep_ms = buffer_time_ms_ / 10;
+  if (sleep_ms < 5) { /* max:200hz */
+    sleep_ms = 5;
+  } else if (sleep_ms > 10){ /* min:100hz */
+    sleep_ms = 10;
+  } else { /* limit to 100~200hz */
+    sleep_ms = sleep_ms;
+  }
+
+  printf("Periodic wakeup [%dms]\n", sleep_ms);
+
+  while (true) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(sleep_ms));
+    /* Signal is threadsafe */
+    if (semaphore_.GetCount() <= 0) {
+      semaphore_.Signal();
     }
   }
 }
