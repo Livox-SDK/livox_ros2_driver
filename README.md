@@ -1,7 +1,6 @@
 # Livox ROS2 Driver([览沃ROS2驱动程序中文说明](https://github.com/Livox-SDK/livox_ros2_driver/blob/master/README_CN.md))
 
-The Livox ROS2 driver is a driver package based on ROS2, specifically used to connect LiDAR products produced by Livox. The driver is recommended to run on ROS2 foxy.
-
+The Livox ROS2 driver is a driver package based on ROS2, specifically used to connect LiDAR products produced by Livox.
 ## 0. Version and Release History
 
 ### 0.1 Current Version
