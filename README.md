@@ -21,11 +21,11 @@ For ROS2 installation, please refer to the ROS2 installation guide :
 
 [ROS2 installation guide](https://index.ros.org/doc/ros2/Installation/Dashing/Linux-Install-Debians/)
 
-&ensp;&ensp;&ensp;&ensp;***Note :***
+***Note :***
 
-&ensp;&ensp;&ensp;&ensp;（1）Be sure to install the desktop version of ROS2 (ros-dashing-desktop);
+（1）Be sure to install the desktop version of ROS2 (ros-dashing-desktop);
 
-&ensp;&ensp;&ensp;&ensp;（2）After installing ROS2 dashing, please follow the installation guide to configure the system environment;
+（2）After installing ROS2 dashing, please follow the installation guide to configure the system environment;
 
 ### 1.2 install colcon
 
@@ -39,18 +39,22 @@ Please refer to the following link for colcon installation：
 
    `git clone https://github.com/Livox-SDK/livox_ros2_driver.git ws_livox/src`
 
-&ensp;&ensp;&ensp;&ensp;***Note :***
+***Note :***
 
-&ensp;&ensp;&ensp;&ensp;Be sure to use the above command to clone the code to the local, otherwise it will compile error due to the file path problem.
+Be sure to use the above command to clone the code to the local, otherwise it will compile error due to the file path problem.
 
-2. Use the following command to build livox_ros2_driver :
+1. Use the following command to build livox_ros2_driver :
 
    ```bash
    cd ws_livox
    colcon build
    ```
 
-3. Source the environment
+***IMPORTANT :***
+
+If you would like to compile livox_ros2_driver, be sure to delete/rename the "livox_sdk_static.a" file in the "/usr/local/lib/" directory. The livox_ros2_driver would build a shared library of [Livox-SDK](https://github.com/Livox-SDK/Livox-SDK) on its own.
+
+1. Source the environment
 
    `source ./install/setup.sh`
 
@@ -92,9 +96,9 @@ Each Livox LiDAR device has a unique broadcast code. The broadcast code consists
 
 &ensp;&ensp;&ensp;&ensp;![Broadcast Code](images/broadcast_code.png)
 
-&ensp;&ensp;&ensp;&ensp;***Note :***
+***Note :***
 
-&ensp;&ensp;&ensp;&ensp;X in the figure above corresponds to 1 in MID-100_Left/MID-40/Horizon/Tele products, 2 in MID-100_Middle, and 3 in MID-100_Right.
+X in the figure above corresponds to 1 in MID-100_Left/MID-40/Horizon/Tele products, 2 in MID-100_Middle, and 3 in MID-100_Right.
 
 ## 4. Launch file and livox_ros2_driver internal parameter configuration instructions
 
@@ -195,11 +199,11 @@ LiDAR configuration parameter
 | imu_rate                   | Int     | Push frequency of IMU sensor data<br>0 -- stop push<br>1 -- 200 Hz<br>Others -- undefined, it will cause unpredictable behavior<br>Currently only Horizon supports this, MID serials do not support it | 0               |
 | extrinsic_parameter_source | Int     | Whether to enable extrinsic parameter automatic compensation<br>0 -- Disable automatic compensation of LiDAR external reference<br>1 -- Automatic compensation of LiDAR external reference | 0               |
 
-&ensp;&ensp;&ensp;&ensp;***Note :***
+***Note :***
 
-&ensp;&ensp;&ensp;&ensp;When connecting multiple LiDAR, if you want to use the external parameter automatic compensation function, you must first use the livox viewer to calibrate the external parameters and save them to LiDAR.
+When connecting multiple LiDAR, if you want to use the external parameter automatic compensation function, you must first use the livox viewer to calibrate the external parameters and save them to LiDAR.
 
-2. When connecting to the Hub, use livox_hub_config.json to configure the parameters of the Hub and LiDAR. Examples of file contents are as follows :
+1. When connecting to the Hub, use livox_hub_config.json to configure the parameters of the Hub and LiDAR. Examples of file contents are as follows :
 
 ```json
 {
@@ -227,11 +231,11 @@ HUB configuration parameter
 | enable_connect | Boolean | Whether to connect to this Hub<br>true -- Connecting to this Hub means that all LiDAR data connected to this Hub will be received<br>false -- Prohibition of connection to this Hub means that all LiDAR data connected to this Hub will not be received | false           |
 | coordinate     | Int     | Coordinate<br>0 -- Cartesian<br>1 -- Spherical             | 0               |
 
-&ensp;&ensp;&ensp;&ensp;***Note :***
+***Note :***
 
-&ensp;&ensp;&ensp;&ensp;(1) The configuration parameters enable_connect and coordinate in the Hub configuration item "hub_config" are global and control the behavior of all LiDARs. Therefore, the LiDAR related configuration in the Hub json configuration file does not include these two contents.
+(1) The configuration parameters enable_connect and coordinate in the Hub configuration item "hub_config" are global and control the behavior of all LiDARs. Therefore, the LiDAR related configuration in the Hub json configuration file does not include these two contents.
 
-&ensp;&ensp;&ensp;&ensp;(2) The Hub itself supports compensation of LiDAR external parameters, and does not require livox_ros2_driver to compensate.
+(2) The Hub itself supports compensation of LiDAR external parameters, and does not require livox_ros2_driver to compensate.
 
 ## 6. livox_ros2_driver timestamp synchronization function
 
@@ -241,13 +245,13 @@ Prepare a GPS device to ensure that the GPS can output UTC time information in G
 
 [Timestamp synchronization](https://github.com/Livox-SDK/Livox-SDK/wiki/Timestamp-Synchronization)
 
-&ensp;&ensp;&ensp;&ensp;***Note :***
+***Note :***
 
-&ensp;&ensp;&ensp;&ensp;(1) The time stamp synchronization function of livox_ros2_driver is based on the LidarSetUtcSyncTime interface of Livox-SDK, and only supports GPS synchronization, which is one of many synchronization methods of livox devices.
+(1) The time stamp synchronization function of livox_ros2_driver is based on the LidarSetUtcSyncTime interface of Livox-SDK, and only supports GPS synchronization, which is one of many synchronization methods of livox devices.
 
-&ensp;&ensp;&ensp;&ensp;(2) Be sure to set the output frequency of GPRMC/GNRMC time information of GPS to 1Hz, other frequencies are not recommended.
+(2) Be sure to set the output frequency of GPRMC/GNRMC time information of GPS to 1Hz, other frequencies are not recommended.
 
-&ensp;&ensp;&ensp;&ensp;(3) Examples of GPRMC/GNRMC format strings are as follows :
+(3) Examples of GPRMC/GNRMC format strings are as follows :
 
 ```bash
 $GNRMC,143909.00,A,5107.0020216,N,11402.3294835,W,0.036,348.3,210307,0.0,E,A*31

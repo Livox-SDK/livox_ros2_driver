@@ -1,6 +1,6 @@
 # 览沃 ROS2 驱动程序（ [livox_ros2_driver English README](https://github.com/Livox-SDK/livox_ros2_driver/) ）
 
-览沃 ROS2 驱动程序是基于 ROS2 的驱动程序包，专门用于连接览沃生产的 LiDAR 产品。该驱动程序目前仅推荐在 ubuntu18.04 下运行，对应的 ROS2 版本是 dashing， 暂时不支持 ROS2 其他版本（例如foxy）。
+览沃 ROS2 驱动程序是基于 ROS2 的驱动程序包，专门用于连接览沃生产的 LiDAR 产品。该驱动程序目前仅推荐在 ubuntu18.04 下运行，对应的 ROS2 版本是 dashing， 暂时不支持 ROS2 其他版本。
 
 ## 0. 版本和发布记录
 
@@ -22,11 +22,11 @@ ROS2 环境安装请参考 ROS2 安装指南：
 
 [ROS2 安装指南](https://index.ros.org/doc/ros2/Installation/Dashing/Linux-Install-Debians/)
 
-&ensp;&ensp;&ensp;&ensp;***说明：***
+***说明：***
 
-&ensp;&ensp;&ensp;&ensp;（1）务必安装 ROS2 桌面版 (ros-dashing-desktop)；
+（1）务必安装 ROS2 桌面版 (ros-dashing-desktop)；
 
-&ensp;&ensp;&ensp;&ensp;（2）安装完 ROS2 dashing 后， 请遵照安装指南配置系统环境；
+（2）安装完 ROS2 dashing 后， 请遵照安装指南配置系统环境；
 
 ### 1.2 colcon 构建工具安装
 
@@ -34,11 +34,6 @@ colcon 安装请参考如下链接：
 
 [colcon 安装](https://index.ros.org/doc/ros2/Tutorials/Colcon-Tutorial/#install-colcon)
 
-### 1.3 Livox-SDK 安装
-
-1. 从 Github 下载或者克隆 Livox-SDK 到本地；
-
-2. 参考对应的 README.md 文档安装和运行 Livox-SDK；
 
 ## 2. 获取并构建览沃 ROS2 驱动源代码包
 
@@ -46,18 +41,22 @@ colcon 安装请参考如下链接：
 
    `git clone https://github.com/Livox-SDK/livox_ros2_driver.git ws_livox/src`
 
-&ensp;&ensp;&ensp;&ensp;***说明：***
+***说明：***
 
-&ensp;&ensp;&ensp;&ensp;务必使用上面的命令克隆代码到本地，否则会因为文件路径的问题而编译出错
+务必使用上面的命令克隆代码到本地，否则会因为文件路径的问题而编译出错
 
-2. 参照如下命令，构建览沃 ROS2 驱动程序
+1. 参照如下命令，构建览沃 ROS2 驱动程序
 
    ```bash
    cd ws_livox
    colcon build
    ```
 
-3. 使用如下命令更新当前 ROS2 包环境
+***重要：***
+
+若需要构建览沃 ROS2 驱动程序，务必将 "/usr/local/lib/" 目录下的 "livox_sdk_static.a" 文件删除或改名，再执行如上构建步骤。览沃 ROS2 驱动程序自身将编译 [Livox-SDK](https://github.com/Livox-SDK/Livox-SDK) 为动态库。
+
+1. 使用如下命令更新当前 ROS2 包环境
 
    `source ./install/setup.sh`
 
@@ -99,9 +98,9 @@ colcon 安装请参考如下链接：
 
 &ensp;&ensp;&ensp;&ensp;![Broadcast Code](images/broadcast_code.png)
 
-&ensp;&ensp;&ensp;&ensp;***说明：***
+***说明：***
 
-&ensp;&ensp;&ensp;&ensp;上图中 X ，在 MID-100_Left/MID-40/Horizon/Tele 产品中对应为 1 ，在 MID-100_Middle 中对应为 2，在MID-100_Right 中对应为 3 。
+上图中 X ，在 MID-100_Left/MID-40/Horizon/Tele 产品中对应为 1 ，在 MID-100_Middle 中对应为 2，在MID-100_Right 中对应为 3 。
 
 ## 4. Launch 文件与览沃 ROS2 驱动程序内部参数配置说明
 
@@ -205,11 +204,11 @@ LiDAR 配置参数说明
 | imu_rate                   | 整型   | IMU 传感器数据的推送频率<br>0 -- 关闭 IMU 传感器数据推送<br>1 --  以 200Hz 频率推送 IMU 传感器数据<br>其他值 -- 未定义，会导致不可预测的行为发生<br>目前只有 Horizon/Tele 支持此选项，MID 序列不支持 | 0               |
 | extrinsic_parameter_source | 整型   | 是否使能外参自动补偿<br>0 -- 不补偿 LiDAR 外参<br>1 -- 自动补偿 LiDAR 外参<br> | 0               |
 
-&ensp;&ensp;&ensp;&ensp;***说明：***
+***说明：***
 
-&ensp;&ensp;&ensp;&ensp;连接多个 LiDAR 时，如果要使用外参自动补偿功能，必需先使用 livox viewer 标定好外参并保存到 LiDAR 中；
+连接多个 LiDAR 时，如果要使用外参自动补偿功能，必需先使用 livox viewer 标定好外参并保存到 LiDAR 中；
 
-2. 连接中心板时，使用 livox_hub_config.json 来配置中心板和 LiDAR 相关的参数，文件内容示例如下：
+1. 连接中心板时，使用 livox_hub_config.json 来配置中心板和 LiDAR 相关的参数，文件内容示例如下：
 
    ```json
 
@@ -238,11 +237,11 @@ HUB 配置参数说明
 | enable_connect | 布尔值 | 是否连接当前 Hub，<br>true -- 连接此 Hub，意味着所有与此中心板相连接的 LiDAR 数据都会被接收 <br>false -- 禁止连接此 Hub，意味着所有与此中心板相连接的 LiDAR 数据都不会被接收 | false           |
 | coordinate     | 整型   | 原始点云数据的坐标轴类型<br>0 -- 直角坐标系<br>1 -- 球坐标系 | 0               |
 
-&ensp;&ensp;&ensp;&ensp;***说明***
+***说明***
 
-&ensp;&ensp;&ensp;&ensp;（1）中心板配置项 hub_config 中配置参数 enable_connect 和 coordinate 是全局性的，控制着所有 LiDAR 的行为，因此中心板 json 配置文件中 LiDAR 相关的配置不包括这两项内容。
+（1）中心板配置项 hub_config 中配置参数 enable_connect 和 coordinate 是全局性的，控制着所有 LiDAR 的行为，因此中心板 json 配置文件中 LiDAR 相关的配置不包括这两项内容。
 
-&ensp;&ensp;&ensp;&ensp;（2）中心板自身支持补偿 LiDAR 外参，无需览沃 ROS2 驱动程序来补偿。
+（2）中心板自身支持补偿 LiDAR 外参，无需览沃 ROS2 驱动程序来补偿。
 
 ## 6. 览沃 ROS2 驱动程序的时间戳同步功能
 
@@ -252,13 +251,13 @@ HUB 配置参数说明
 
 [时间戳同步](https://github.com/Livox-SDK/Livox-SDK/wiki/Timestamp-Synchronization)
 
-&ensp;&ensp;&ensp;&ensp;***说明***
+***说明***
 
-&ensp;&ensp;&ensp;&ensp;（1）览沃 ROS2 驱动程序的时间戳同步功能是基于 Livox-SDK 的 LidarSetUtcSyncTime 接口实现，且只支持 GPS 同步，是览沃设备多种同步方式的一种；
+（1）览沃 ROS2 驱动程序的时间戳同步功能是基于 Livox-SDK 的 LidarSetUtcSyncTime 接口实现，且只支持 GPS 同步，是览沃设备多种同步方式的一种；
 
-&ensp;&ensp;&ensp;&ensp;（2）务必将 GPS 的 GPRMC/GNRMC 时间信息的输出频率设置为 1Hz，其他频率不推荐；
+（2）务必将 GPS 的 GPRMC/GNRMC 时间信息的输出频率设置为 1Hz，其他频率不推荐；
 
-&ensp;&ensp;&ensp;&ensp;（3）GPRMC/GNRMC 格式字符串示例如下：
+（3）GPRMC/GNRMC 格式字符串示例如下：
 
 ```bash
 
