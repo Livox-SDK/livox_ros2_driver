@@ -335,6 +335,7 @@ namespace livox_ros {
                 std::dynamic_pointer_cast < rclcpp::Publisher < sensor_msgs::msg::PointCloud2 >>
                                                                                               (GetCurrentPublisher(
                                                                                                       handle));
+
         if (kOutputToRos == output_type_) {
             sensor_msgs::msg::PointCloud2 msg;
             pcl::toROSMsg(cloud, msg);
@@ -489,6 +490,8 @@ namespace livox_ros {
         pcl::toROSMsg(*tixiao_cloud_out, cloud_temp);
         cloud_temp.header = livox_msg.header;
 //        Maybe?
+        RCLCPP_INFO_ONCE(cur_node_->get_logger(), "My log message %d", 4);
+        
         static rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_tixiao_cloud =
                 cur_node_->create_publisher<sensor_msgs::msg::PointCloud2>("/points_raw", 10);
         pub_tixiao_cloud->publish(cloud_temp);
