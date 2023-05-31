@@ -27,6 +27,8 @@
 
 #include <thread>
 #include "comm_protocol.h"
+#include <cstdio>
+#include <memory>
 #include "comm_device.h"
 #include "user_uart.h"
 
