@@ -29,6 +29,7 @@
 #include "comm_protocol.h"
 #include "comm_device.h"
 #include "user_uart.h"
+#include <memory> 
 
 namespace livox_ros {
 
