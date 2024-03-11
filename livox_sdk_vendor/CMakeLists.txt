@@ -5,7 +5,7 @@ project(livox_sdk_vendor)
 find_package(ament_cmake REQUIRED)
 
 macro(build_livox_sdk)
-  set(livox_sdk_REV "v2.3.0")
+  set(livox_sdk_REV "master")
   set(extra_cmake_args)
 
   get_property(multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
@@ -15,7 +15,7 @@ macro(build_livox_sdk)
 
   include(ExternalProject)
   externalproject_add(livox-sdk-${livox_sdk_REV}
-    GIT_REPOSITORY https://github.com/Livox-SDK/Livox-SDK.git
+    GIT_REPOSITORY https://github.com/acceleration-robotics/Livox-SDK.git
     GIT_TAG ${livox_sdk_REV}
     GIT_SHALLOW OFF
     TIMEOUT 60
