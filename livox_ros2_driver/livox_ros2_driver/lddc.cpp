@@ -320,10 +320,12 @@ uint32_t Lddc::PublishPointcloudData(LidarDataQueue *queue, uint32_t packet_num,
       std::dynamic_pointer_cast<rclcpp::Publisher<sensor_msgs::msg::PointCloud2>>
       (GetCurrentPublisher(handle));
   if (kOutputToRos == output_type_) {
-    sensor_msgs::msg::PointCloud2 cloud2_ros;
+    sensor_msgs::msg::PointCloud2 cloud2ros_msg;
+    
     cloud.header.stamp = cur_node_->now().nanoseconds();
-    pcl::toROSMsg(cloud,cloud2_ros);
-    publisher->publish(cloud2_ros);
+    pcl::toROSMsg(cloud,cloud2ros_msg);
+
+    publisher->publish(cloud2ros_msg);
   } else {
 #if 0    
     if (bag_) {
