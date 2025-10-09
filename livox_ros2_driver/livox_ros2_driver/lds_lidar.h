@@ -90,6 +90,8 @@ class LdsLidar : public Lds {
   static void SetHighSensitivityCb(livox_status status, uint8_t handle,
                                    DeviceParameterResponse *response,
                                    void *clent_data);
+  static void FeedbackSetMode(livox_status status, uint8_t handle,
+                              uint8_t response, void *client_data);
 
   void ResetLdsLidar(void);
   int AddBroadcastCodeToWhitelist(const char *broadcast_code);
@@ -114,6 +116,8 @@ class LdsLidar : public Lds {
   TimeSync *timesync_;
   TimeSyncConfig timesync_config_;
   std::mutex config_mutex_;
+  // In case the Livox is at a different state than NORMAL when starting the driver, set it to NORMAL to wake it up
+  bool initial_wakeup_livox_[kMaxLidarCount] = {false};
 };
 
 }  // namespace livox_ros

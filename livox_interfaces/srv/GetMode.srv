@@ -1,0 +1,12 @@
+# Service to get the active mode of the Livox-lidar
+---
+uint8 MODE_NORMAL = 1
+uint8 MODE_POWERSAVING = 2
+uint8 MODE_STANDBY = 3
+
+uint8 mode          # The current active mode of the Livox-lidar
+                    # MODE_NORMAL      - The normal operation mode
+                    # MODE_POWERSAVING - The power-saving operation mode
+                    # MODE_STANDBY     - The standby operation mode
+
+bool success        # Indicates if the mode was successfully retrieved. If not true, the returned mode is invalid

@@ -423,7 +423,7 @@ uint32_t Lddc::PublishCustomPointcloud(LidarDataQueue *queue,
             line_num);
       } else {
         /* Skip the packet */
-        RCLCPP_INFO(cur_node_->get_logger(), "Lidar[%d] unkown packet type[%d]", handle,
+        RCLCPP_INFO(cur_node_->get_logger(), "Lidar[%d] unknown packet type[%d]", handle,
                  lidar->raw_data_type);
         break;
       }
@@ -610,6 +610,95 @@ std::shared_ptr<rclcpp::PublisherBase> Lddc::CreatePublisher(uint8_t msg_type,
     }
 }
 
+void Lddc::CreateModeServices(uint8_t handle, std::string &topic_name)
+{
+    // Create the services using lambdas and include the handle as an additional argument
+    get_mode_srv_[handle] = cur_node_->create_service<livox_interfaces::srv::GetMode>(
+            topic_name + "/get_mode", [this, handle](
+                    const std::shared_ptr<rmw_request_id_t> request_header,
+                    const std::shared_ptr<livox_interfaces::srv::GetMode::Request> request,
+                    const std::shared_ptr<livox_interfaces::srv::GetMode::Response> response
+            ){ CallbackGetMode(request_header, request, response, handle); });
+    set_mode_srv_[handle] = cur_node_->create_service<livox_interfaces::srv::SetMode>(
+            topic_name + "/set_mode", [this, handle](
+                    const std::shared_ptr<rmw_request_id_t> request_header,
+                    const std::shared_ptr<livox_interfaces::srv::SetMode::Request> request,
+                    const std::shared_ptr<livox_interfaces::srv::SetMode::Response> response
+                    ){ CallbackSetMode(request_header, request, response, handle); });
+}
+
+void Lddc::CallbackSetMode(
+        const std::shared_ptr<rmw_request_id_t> /*request_header*/,
+        const std::shared_ptr<livox_interfaces::srv::SetMode::Request> request,
+        const std::shared_ptr<livox_interfaces::srv::SetMode::Response> response,
+        const uint8_t handle)
+{
+    switch(request->set_mode)
+    {
+        case livox_interfaces::srv::SetMode::Request::MODE_NORMAL: {
+            LidarSetMode(handle, LidarMode::kLidarModeNormal, FeedbackSetMode, lds_);
+            // Because the connect-state is not updated when changing the mode to normal, update it explicitly
+            lds_->lidars_[handle].connect_state = kConnectStateOn;
+            RCLCPP_INFO(cur_node_->get_logger(), "Lidar[%d]: Trying to set mode to NORMAL", handle);
+        }; break;
+        case livox_interfaces::srv::SetMode::Request::MODE_POWERSAVING: {
+            LidarSetMode(handle, LidarMode::kLidarModePowerSaving, FeedbackSetMode, lds_);
+            RCLCPP_INFO(cur_node_->get_logger(), "Lidar[%d]: Trying to set mode to POWERSAVING", handle);
+        }; break;
+        case livox_interfaces::srv::SetMode::Request::MODE_STANDBY: {
+            LidarSetMode(handle, LidarMode::kLidarModeStandby, FeedbackSetMode, lds_);
+            RCLCPP_INFO(cur_node_->get_logger(), "Lidar[%d]: Trying to set mode to STANDBY", handle);
+        }; break;
+        default: {
+            // No valid mode has been selected, therefore print an error-message
+            RCLCPP_ERROR(cur_node_->get_logger(), "Lidar[%d]: Trying to set an unknown mode[%d], skipping it!", handle,
+                         request->set_mode);
+            response->success = false;
+            return;
+        };
+    }
+    response->success = true;
+}
+
+void Lddc::CallbackGetMode(
+        const std::shared_ptr<rmw_request_id_t> /*request_header*/,
+        const std::shared_ptr<livox_interfaces::srv::GetMode::Request> request,
+        const std::shared_ptr<livox_interfaces::srv::GetMode::Response> response,
+        const uint8_t handle)
+{
+    LidarDevice *p_lidar = &lds_->lidars_[handle];
+
+    switch(p_lidar->info.state)
+    {
+        case kLidarStateNormal: {
+            response->mode = livox_interfaces::srv::GetMode::Response::MODE_NORMAL;
+        }; break;
+        case kLidarStatePowerSaving: {
+            response->mode = livox_interfaces::srv::GetMode::Response::MODE_POWERSAVING;
+        }; break;
+        case kLidarStateStandBy: {
+            response->mode = livox_interfaces::srv::GetMode::Response::MODE_STANDBY;
+        }; break;
+        default: {
+            response->mode = 0;
+            response->success = false;
+            return;
+        };
+    }
+    response->success = true;
+}
+
+void Lddc::FeedbackSetMode(livox_status status, uint8_t handle,
+                               uint8_t response, void *client_data) {
+    if (status != kStatusSuccess) {
+        printf("Lidar[%d] setting lidar state has FAILED!\n", handle);
+    } else {
+        printf("Lidar[%d] setting lidar state was successful!\n", handle);
+    }
+    // Flush the stdout buffer so the printf-statements are visible
+    fflush(stdout);
+}
+
 std::shared_ptr<rclcpp::PublisherBase> Lddc::GetCurrentPublisher(uint8_t handle) {
   uint32_t queue_size = kMinEthPacketQueueSize;
   if (use_multi_topic_) {
@@ -622,6 +711,7 @@ std::shared_ptr<rclcpp::PublisherBase> Lddc::GetCurrentPublisher(uint8_t handle)
       queue_size = queue_size * 2; // queue size is 64 for only one lidar
       private_pub_[handle] = CreatePublisher(transfer_format_, topic_name,
           queue_size);
+      CreateModeServices(handle, topic_name);
     }
     return private_pub_[handle];
   } else {
@@ -629,6 +719,7 @@ std::shared_ptr<rclcpp::PublisherBase> Lddc::GetCurrentPublisher(uint8_t handle)
       std::string topic_name("livox/lidar");
       queue_size = queue_size * 8; // shared queue size is 256, for all lidars
       global_pub_ = CreatePublisher(transfer_format_, topic_name, queue_size);
+      CreateModeServices(handle, topic_name);
     }
     return global_pub_;
   }
@@ -646,6 +737,7 @@ std::shared_ptr<rclcpp::PublisherBase> Lddc::GetCurrentImuPublisher(uint8_t hand
       queue_size = queue_size * 2; // queue size is 64 for only one lidar
       private_imu_pub_[handle] = CreatePublisher(kLivoxImuMsg, topic_name,
           queue_size);
+      CreateModeServices(handle, topic_name);
     }
     return private_imu_pub_[handle];
   } else {
@@ -653,6 +745,7 @@ std::shared_ptr<rclcpp::PublisherBase> Lddc::GetCurrentImuPublisher(uint8_t hand
       std::string topic_name("livox/imu");
       queue_size = queue_size * 8; // shared queue size is 256, for all lidars
       global_imu_pub_ = CreatePublisher(kLivoxImuMsg, topic_name, queue_size);
+      CreateModeServices(handle, topic_name);
     }
     return global_imu_pub_;
   }

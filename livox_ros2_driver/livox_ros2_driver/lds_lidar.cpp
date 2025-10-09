@@ -305,6 +305,44 @@ void LdsLidar::OnDeviceChange(const DeviceInfo *info, DeviceEvent type) {
 
       p_lidar->connect_state = kConnectStateConfig;
     }
+
+    switch(p_lidar->info.state)
+    {
+      case kLidarStateInit: {
+        //printf("Lidar[%s] state INIT!\n", info->broadcast_code);
+      }; break;
+      case kLidarStateNormal: {
+        printf("Lidar[%s] state NORMAL!\n", info->broadcast_code);
+        // Set the flag that this Livox has been set once to the state NORMAL to true. This flag is used to set the
+        // Livox-sensor to the state NORMAL in case this ROS2-driver has been started and theLivox was
+        // in the state STANDBY or POWERSAVING initially.
+        g_lds_ldiar->initial_wakeup_livox_[handle] = true;
+      }; break;
+      case kLidarStatePowerSaving: {
+        printf("Lidar[%s] state POWERSAVING!\n", info->broadcast_code);
+        // If the Livox is in state POWERSAVING and has never been in state NORMAL, set it to state NORMAL initially
+        if(g_lds_ldiar->initial_wakeup_livox_[handle] == false)
+        {
+            printf("Lidar[%s] wakeup lidar by setting the state to NORMAL!\n", info->broadcast_code);
+            LidarSetMode(handle, LidarMode::kLidarModeNormal, FeedbackSetMode, g_lds_ldiar);
+        }
+      }; break;
+      case kLidarStateStandBy: {
+        printf("Lidar[%s]  state STANDBY!\n", info->broadcast_code);
+        // If the Livox is in state STANDBY and has never been in state NORMAL, set it to state NORMAL initially
+        if(g_lds_ldiar->initial_wakeup_livox_[handle] == false)
+        {
+            printf("Lidar[%s] wakeup lidar by setting the state to NORMAL!\n", info->broadcast_code);
+            LidarSetMode(handle, LidarMode::kLidarModeNormal, FeedbackSetMode, g_lds_ldiar);
+        }
+      }; break;
+      case kLidarStateError: {
+        printf("Lidar[%s] state ERROR!\n", info->broadcast_code);
+      }; break;
+      case kLidarStateUnknown: {
+        //printf("Lidar[%s] state UNKNOWN!\n", info->broadcast_code);
+      };
+    }
   }
 }
 
@@ -777,6 +815,17 @@ int LdsLidar::GetRawConfig(const char *broadcast_code, UserRawConfig &config) {
   }
 
   return -1;
+}
+
+void LdsLidar::FeedbackSetMode(livox_status status, uint8_t handle,
+                               uint8_t response, void *client_data) {
+  if (status != kStatusSuccess) {
+    printf("Lidar[%s] setting lidar state has FAILED!\n", g_lds_ldiar->lidars_[handle].info.broadcast_code);
+  } else {
+    printf("Lidar[%s] setting lidar state was successful!\n", g_lds_ldiar->lidars_[handle].info.broadcast_code);
+  }
+  // Flush the stdout buffer so the printf-statements are visible
+  fflush(stdout);
 }
 
 }  // namespace livox_ros
