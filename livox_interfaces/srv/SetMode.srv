@@ -1,0 +1,12 @@
+# Service to change the mode of the Livox-lidar
+uint8 MODE_NORMAL = 1
+uint8 MODE_POWERSAVING = 2
+uint8 MODE_STANDBY = 3
+
+uint8 set_mode      # The mode of the Livox-lidar that you want to set active
+                    # MODE_NORMAL      - The normal operation mode
+                    # MODE_POWERSAVING - The power-saving operation mode
+                    # MODE_STANDBY     - The standby operation mode
+
+---
+bool success        # Indicates if the mode has been set successfully

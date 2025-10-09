@@ -35,6 +35,8 @@
 #include <sensor_msgs/msg/imu.hpp>
 #include "livox_interfaces/msg/custom_point.hpp"
 #include "livox_interfaces/msg/custom_msg.hpp"
+#include "livox_interfaces/srv/get_mode.hpp"
+#include "livox_interfaces/srv/set_mode.hpp"
 
 namespace livox_ros {
 
@@ -97,6 +99,19 @@ class Lddc {
   void FillPointsToCustomMsg(livox_interfaces::msg::CustomMsg& livox_msg,
       LivoxPointXyzrtl* src_point, uint32_t num, uint32_t offset_time,
       uint32_t point_interval, uint32_t echo_num);
+  void CreateModeServices(uint8_t handle, std::string &topic_name);
+  void CallbackGetMode(
+      const std::shared_ptr<rmw_request_id_t> request_header,
+      const std::shared_ptr<livox_interfaces::srv::GetMode::Request> request,
+      const std::shared_ptr<livox_interfaces::srv::GetMode::Response> response,
+      const uint8_t handle);
+  void CallbackSetMode(
+      const std::shared_ptr<rmw_request_id_t> request_header,
+      const std::shared_ptr<livox_interfaces::srv::SetMode::Request> request,
+      const std::shared_ptr<livox_interfaces::srv::SetMode::Response> response,
+      const uint8_t handle);
+  static void FeedbackSetMode(livox_status status, uint8_t handle,
+                              uint8_t response, void *client_data);
   uint8_t transfer_format_;
   uint8_t use_multi_topic_;
   uint8_t data_src_;
@@ -109,6 +124,8 @@ class Lddc {
   std::shared_ptr<rclcpp::PublisherBase>global_pub_;
   std::shared_ptr<rclcpp::PublisherBase>private_imu_pub_[kMaxSourceLidar];
   std::shared_ptr<rclcpp::PublisherBase>global_imu_pub_;
+  std::shared_ptr<rclcpp::ServiceBase>get_mode_srv_[kMaxSourceLidar];
+  std::shared_ptr<rclcpp::ServiceBase>set_mode_srv_[kMaxSourceLidar];
   rclcpp::Node* cur_node_;
   // rclcpp::rosbag::Bag *bag_;
 };
