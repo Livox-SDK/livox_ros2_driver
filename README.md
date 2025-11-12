@@ -19,7 +19,7 @@ Before running Livox ROS2 driver under ubuntu18.04, ROS2 (dashing, ubuntu18.04),
 
 For ROS2 installation, please refer to the ROS2 installation guide :
 
-[ROS2 installation guide](https://index.ros.org/doc/ros2/Installation/Dashing/Linux-Install-Debians/)
+[ROS2 installation guide]([https://index.ros.org/doc/ros2/Installation/Dashing/Linux-Install-Debians/](https://docs.ros.org/en/rolling/Installation/Ubuntu-Install-Debs.html))
 
 ***Note :***
 
