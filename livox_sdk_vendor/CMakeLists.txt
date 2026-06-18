@@ -21,6 +21,7 @@ macro(build_livox_sdk)
     GIT_SHALLOW OFF
     TIMEOUT 60
     CMAKE_ARGS
+      -DCMAKE_POLICY_VERSION_MINIMUM=3.5
       -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/livox-sdk_install
       -DCMAKE_POSITION_INDEPENDENT_CODE=ON
       -DCMAKE_CXX_FLAGS=${livox_sdk_cxx_flags}
