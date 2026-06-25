@@ -1,6 +1,7 @@
 # Copyright(c) 2020 livoxtech limited.
 
 cmake_minimum_required(VERSION 3.5)
+cmake_policy(SET CMP0074 NEW)        # 显式启用策略
 project(livox_ros2_driver)
 
 # Default to C99
@@ -30,14 +31,6 @@ find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 find_package(PCL REQUIRED)
 find_package(livox_sdk REQUIRED)
-
-# check apr
-find_package(PkgConfig)
-pkg_check_modules(APR apr-1)
-if (APR_FOUND)
-	message(${APR_INCLUDE_DIRS})
-	message(${APR_LIBRARIES})
-endif (APR_FOUND)
 
 ## make sure the livox_sdk_static library is installed
 find_library(LIVOX_SDK_LIBRARY liblivox_sdk_static.a /usr/local/lib)
@@ -72,7 +65,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${livox_sdk_INCLUDE_DIRS})
 # include file direcotry
 target_include_directories(${PROJECT_NAME} PUBLIC
   ${PCL_INCLUDE_DIRS}
-  ${APR_INCLUDE_DIRS}
   common
   common/rapidjson
   comon/rapdidxml
@@ -87,7 +79,6 @@ target_link_libraries(${PROJECT_NAME}
 	${livox_sdk_LIBRARIES}
 	${Boost_LIBRARY}
 	${PCL_LIBRARIES}
-	${APR_LIBRARIES}
 )
 #  ${sensor_msgs_LIBRARIES}
 #  ${std_msgs_LIBRARIES}
