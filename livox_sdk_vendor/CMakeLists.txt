@@ -21,6 +21,10 @@ macro(build_livox_sdk)
     GIT_TAG ${livox_sdk_REV}
     GIT_SHALLOW OFF
     TIMEOUT 60
+    PATCH_COMMAND
+      ${CMAKE_COMMAND}
+      -DSOURCE_DIR=<SOURCE_DIR>
+      -P ${CMAKE_CURRENT_LIST_DIR}/cmake/patch_livox_sdk.cmake
     CMAKE_ARGS
       -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/livox-sdk_install
       -DCMAKE_POSITION_INDEPENDENT_CODE=ON
