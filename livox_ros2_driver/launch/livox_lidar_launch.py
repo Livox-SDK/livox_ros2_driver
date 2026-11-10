@@ -1,6 +1,8 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 import launch
 
@@ -20,19 +22,19 @@ rviz_config_path = os.path.join(cur_config_path, 'livox_lidar.rviz')
 user_config_path = os.path.join(cur_config_path, 'livox_lidar_config.json')
 ################### user configure parameters for ros2 end #####################
 
-livox_ros2_params = [
-    {"xfer_format": xfer_format},
-    {"multi_topic": multi_topic},
-    {"data_src": data_src},
-    {"publish_freq": publish_freq},
-    {"output_data_type": output_type},
-    {"frame_id": frame_id},
-    {"lvx_file_path": lvx_file_path},
-    {"user_config_path": user_config_path},
-    {"cmdline_input_bd_code": cmdline_bd_code}
-]
-
 def generate_launch_description():
+    livox_ros2_params = [
+        {"xfer_format": xfer_format},
+        {"multi_topic": multi_topic},
+        {"data_src": data_src},
+        {"publish_freq": publish_freq},
+        {"output_data_type": output_type},
+        {"frame_id": frame_id},
+        {"lvx_file_path": lvx_file_path},
+        {"user_config_path": LaunchConfiguration('user_config_path')},
+        {"cmdline_input_bd_code": cmdline_bd_code}
+    ]
+
     livox_driver = Node(
         package='livox_ros2_driver',
         executable='livox_ros2_driver_node',
@@ -42,5 +44,10 @@ def generate_launch_description():
         )
 
     return LaunchDescription([
+        DeclareLaunchArgument(
+            'user_config_path',
+            default_value=user_config_path,
+            description='Path to the Livox lidar JSON configuration file.',
+        ),
         livox_driver
     ])

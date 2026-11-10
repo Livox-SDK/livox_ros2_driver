@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(livox_sdk_vendor)
 
@@ -19,9 +21,17 @@ macro(build_livox_sdk)
     GIT_TAG ${livox_sdk_REV}
     GIT_SHALLOW OFF
     TIMEOUT 60
+    PATCH_COMMAND
+      ${CMAKE_COMMAND}
+      -DSOURCE_DIR=<SOURCE_DIR>
+      -P ${CMAKE_CURRENT_LIST_DIR}/cmake/patch_livox_sdk.cmake
     CMAKE_ARGS
       -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/livox-sdk_install
       -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+      # Livox SDK v2.3.1 bundles an old fmt that declares `char8_t` while
+      # compiling as C++11. GCC 13 diagnoses that as -Wc++20-compat, and the
+      # SDK's own -Werror turns the compatibility warning into a build error.
+      -DCMAKE_CXX_FLAGS=-Wno-c++20-compat
       ${extra_cmake_args}
   )
 
